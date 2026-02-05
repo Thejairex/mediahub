@@ -5,11 +5,12 @@ namespace App\Livewire;
 use App\Models\MediaItems;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 
 #[Layout('components.layouts.auth')]
+#[Title('Dashboard')]
 class Dashboard extends Component
 {
-
     public function incrementProgress($id)
     {
         $mediaItem = MediaItems::find($id);
@@ -35,7 +36,7 @@ class Dashboard extends Component
 
     public function render()
     {
-        $mediaItems = MediaItems::orderBy('id', 'desc')->get();
+        $mediaItems = MediaItems::orderBy('updated_at', 'desc')->get();
         return view('livewire.dashboard', compact('mediaItems'));
     }
 }

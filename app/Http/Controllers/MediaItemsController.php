@@ -2,13 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Livewire\Animes;
 use App\Models\MediaItems;
 use Illuminate\Http\Request;
 
 class MediaItemsController extends Controller
 {
+
+    public function index(Request $request) {
+        $type = $request->type;
+        return view('media-items.index', compact('type'));
+    }
+
+    public function library(){
+        $type = 'library';
+        return view('media-items.index', compact('type'));
+    }
+
     public function create(){
         return view('media-items.create');
+    }
+
+    public function show(Request $request){
+        $mediaItem = MediaItems::find($request->id);
+        return view('media-items.show', compact('mediaItem'));
     }
 
     public function store(Request $request){
@@ -23,6 +40,7 @@ class MediaItemsController extends Controller
             'source_url' => ['nullable', 'string', 'max:255'],
             'image_url' => ['nullable', 'string', 'max:255'],
         ]);
+        $validated['name'] = ucwords(strtolower(trim($validated['name'])));
         $validated['user_id'] = auth()->user()->id;
         MediaItems::create($validated);
 

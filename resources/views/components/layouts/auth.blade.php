@@ -1,31 +1,19 @@
 <!DOCTYPE html>
-<html class="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
+<html class="dark" lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <title>{{ $title ?? 'Media Hub' }}</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
         rel="stylesheet" />
-
-    <!-- Material Symbols -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
-    <!-- Theme Configuration -->
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -35,10 +23,6 @@
                         "primary": "#197fe6",
                         "background-light": "#f6f7f8",
                         "background-dark": "#111921",
-                        "surface-dark": "#1a222d",
-                        "border-dark": "#293038",
-                        "input-bg-dark": "#151a21",
-                        "input-border-dark": "#3c4753", // Slightly lighter than bg-dark for cards/tables
                     },
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
@@ -48,38 +32,115 @@
             },
         }
     </script>
-
-    <!-- Scripts -->
     <style>
-        /* Custom scrollbar for dark mode textareas */
-        .dark textarea::-webkit-scrollbar {
-            width: 8px;
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        .dark textarea::-webkit-scrollbar-track {
-            background: #1c232d;
+
+        .active-nav {
+            background-color: #f0f2f4;
+            color: #197fe6 !important;
         }
-        .dark textarea::-webkit-scrollbar-thumb {
-            background: #3c4753;
-            border-radius: 4px;
-        }
-        .dark textarea::-webkit-scrollbar-thumb:hover {
-            background: #4b5966;
+
+        body {
+            font-family: 'Inter', sans-serif;
         }
     </style>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
 </head>
 
-<body
-    class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex flex-col">
-    <x-navbars.auth-nav />
-
-    <!-- Main Content -->
-    <main class="flex-1 px-4 py-8 lg:px-10">
-        {{ $slot }}
-    </main>
-
-    @livewireScripts
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white transition-colors duration-200">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside
+            class="w-50 flex flex-col border-r border-solid border-[#f0f2f4] dark:border-[#2a3441] bg-white dark:bg-[#1a232e] z-10">
+            <div class="p-6">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="bg-primary text-white p-1 rounded">
+                        <span class="material-symbols-outlined text-lg">stacked_bar_chart</span>
+                    </div>
+                    <h1 class="text-xl font-bold tracking-tight">Media Hub</h1>
+                </div>
+                <p class="text-[#637588] dark:text-[#a0aec0] text-xs uppercase tracking-widest font-semibold">Personal
+                    Tracker</p>
+            </div>
+            <nav class="flex-1 px-4 space-y-1">
+                
+                <a @class([
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                    'active-nav' => request()->routeIs('dashboard'),
+                    'text-[#637588] dark:text-[#a0aec0] hover:bg-gray-50 dark:hover:bg-gray-800' => !request()->routeIs('dashboard'),
+                ]) href="{{ route('dashboard') }}">
+                    <span class="material-symbols-outlined">home</span>
+                    <span class="text-sm font-medium">Home</span>
+                </a>
+                <a @class([
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                    'active-nav' => request()->routeIs('media-items.library'),
+                    'text-[#637588] dark:text-[#a0aec0] hover:bg-gray-50 dark:hover:bg-gray-800' => !request()->routeIs('media-items.library'),
+                ]) href="{{ route('media-items.library') }}">
+                    <span class="material-symbols-outlined">library_books</span>
+                    <span class="text-sm font-medium">Library</span>
+                </a>
+                <a @class([
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                    'active-nav' => request()->routeIs('media-items.*') && (request('type') == 'anime' || (request()->route('media_item') && request()->route('media_item')->type == 'anime')),
+                    'text-[#637588] dark:text-[#a0aec0] hover:bg-gray-50 dark:hover:bg-gray-800' => !(request()->routeIs('media-items.*') && (request('type') == 'anime' || (request()->route('media_item') && request()->route('media_item')->type == 'anime'))),
+                ])    href="{{ route('media-items.index', ['type' => 'anime']) }}">
+                    <span class="material-symbols-outlined">play_circle</span>
+                    <span class="text-sm font-medium">Anime</span>
+                </a>
+                <a @class([
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                    'active-nav' => request()->routeIs('media-items.*') && (request('type') == 'manga' || (request()->route('media_item') && request()->route('media_item')->type == 'manga')),
+                    'text-[#637588] dark:text-[#a0aec0] hover:bg-gray-50 dark:hover:bg-gray-800' => !(request()->routeIs('media-items.*') && (request('type') == 'manga' || (request()->route('media_item') && request()->route('media_item')->type == 'manga'))),
+                ]) href="{{ route('media-items.index', ['type' => 'manga']) }}">
+                    <span class="material-symbols-outlined">menu_book</span>
+                    <span class="text-sm font-medium">Manga</span>
+                </a>
+                <a @class([
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                    'active-nav' => request()->routeIs('media-items.*') && (request('type') == 'novel' || (request()->route('media_item') && request()->route('media_item')->type == 'novel')),
+                    'text-[#637588] dark:text-[#a0aec0] hover:bg-gray-50 dark:hover:bg-gray-800' => !(request()->routeIs('media-items.*') && (request('type') == 'novel' || (request()->route('media_item') && request()->route('media_item')->type == 'novel'))),
+                ]) href="{{ route('media-items.index', ['type' => 'novel']) }}">
+                    <span class="material-symbols-outlined">auto_stories</span>
+                    <span class="text-sm font-medium">Novels</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-[#f0f2f4] dark:border-[#2a3441]">
+                <div class="flex items-center gap-3 px-3 py-2">
+                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-sm">person</span>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-semibold truncate">Alex Reader</p>
+                        <p class="text-[10px] text-[#637588] dark:text-[#a0aec0]">Premium Member</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto flex flex-col">
+            <!-- Top Header -->
+            <header
+                class="h-16 flex items-center justify-between px-8 bg-white dark:bg-[#1a232e] border-b border-[#f0f2f4] dark:border-[#2a3441] sticky top-0 z-20">
+                <h2 class="text-lg font-bold">{{ $title ?? 'Dashboard' }}</h2>
+                <div class="flex items-center gap-4">
+                    <div class="relative max-w-xs">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#637588] text-xl">search</span>
+                        <input
+                            class="w-64 pl-10 pr-4 py-1.5 bg-[#f0f2f4] dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary"
+                            placeholder="Search your library..." type="text" />
+                    </div>
+                    <button
+                        class="p-2 text-[#637588] dark:text-[#a0aec0] hover:bg-[#f0f2f4] dark:hover:bg-gray-800 rounded-full transition-colors">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                </div>
+            </header>
+            {{ $slot }}
+        </main>
+    </div>
 </body>
 
 </html>
