@@ -3,32 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Livewire\Animes;
+use App\Models\Activity;
 use App\Models\MediaItems;
 use Illuminate\Http\Request;
 
 class MediaItemsController extends Controller
 {
 
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $type = $request->type;
         return view('media-items.index', compact('type'));
     }
 
-    public function library(){
+    public function library()
+    {
         $type = 'library';
         return view('media-items.index', compact('type'));
     }
 
-    public function create(){
+    public function create()
+    {
         return view('media-items.create');
     }
 
-    public function show(Request $request){
+    public function show(Request $request)
+    {
         $mediaItem = MediaItems::find($request->id);
         return view('media-items.show', compact('mediaItem'));
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', 'max:255'],
@@ -42,20 +48,33 @@ class MediaItemsController extends Controller
         ]);
         $validated['name'] = ucwords(strtolower(trim($validated['name'])));
         $validated['user_id'] = auth()->user()->id;
-        MediaItems::create($validated);
+        $mediaItem = MediaItems::create($validated);
 
-        return redirect('/media-items');
+        // Log activity
+        Activity::create([
+            'user_id' => auth()->id(),
+            'media_item_id' => $mediaItem->id,
+            'activity_type' => 'created',
+            'description' => 'Added new ' . $mediaItem->type,
+            'old_value' => null,
+            'new_value' => $mediaItem->name,
+        ]);
+
+        return redirect('/media-items/' . $mediaItem->type);
     }
 
-    public function edit(){
+    public function edit()
+    {
         return view('media-items.edit');
     }
 
-    public function update(){
+    public function update()
+    {
 
     }
 
-    public function destroy(){
+    public function destroy()
+    {
 
     }
 }

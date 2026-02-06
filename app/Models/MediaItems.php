@@ -29,6 +29,20 @@ class MediaItems extends Model
         'plan_to_watch' => 'Plan to Watch',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($mediaItem) {
+            Activity::create([
+                'user_id' => auth()->id(),
+                'media_item_id' => $mediaItem->id,
+                'activity_type' => 'created',
+                'description' => 'Created media item',
+                'old_value' => null,
+                'new_value' => null,
+            ]);
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

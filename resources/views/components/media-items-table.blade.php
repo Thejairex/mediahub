@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use App\Models\MediaItems;
+use App\Models\Activity;
 use Livewire\WithPagination;
 
 new class extends Component {
@@ -46,8 +47,19 @@ new class extends Component {
             }
         }
 
+        $oldProgress = $mediaItem->progress_current;
         $mediaItem->progress_current += 1;
         $mediaItem->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => auth()->id(),
+            'media_item_id' => $mediaItem->id,
+            'activity_type' => 'progress_update',
+            'description' => 'Updated progress',
+            'old_value' => (string) $oldProgress,
+            'new_value' => (string) $mediaItem->progress_current,
+        ]);
     }
 
     public function decrementProgress($id)
@@ -56,8 +68,20 @@ new class extends Component {
         if ($mediaItem->progress_current == 0) {
             return;
         }
+
+        $oldProgress = $mediaItem->progress_current;
         $mediaItem->progress_current -= 1;
         $mediaItem->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => auth()->id(),
+            'media_item_id' => $mediaItem->id,
+            'activity_type' => 'progress_update',
+            'description' => 'Updated progress',
+            'old_value' => (string) $oldProgress,
+            'new_value' => (string) $mediaItem->progress_current,
+        ]);
     }
 
     public function mount($type)
@@ -89,7 +113,7 @@ new class extends Component {
                     collection
                 </p>
             </div>
-            <a href="{{ route('media-items.create', $type) }}"
+            <a href="{{ route('media-items.create') }}"
                 class="flex items-center gap-2 h-11 px-6 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-all shadow-sm">
                 <span class="material-symbols-outlined text-[20px]">add</span>
                 <span>Add {{ ucfirst($type) }}</span>
@@ -105,15 +129,19 @@ new class extends Component {
                     placeholder="Search titles, authors, or genres..."
                     wire:model.live.debounce.300ms="search" />
             </div>
+            {{-- Filter --}}
             <div
-                class="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-[#dce0e5] dark:border-gray-700">
-                <button
-                    class="px-4 py-2 text-sm font-bold rounded-lg text-[#637588] dark:text-gray-400 hover:text-primary transition-colors">All</button>
-                <button class="px-4 py-2 text-sm font-bold rounded-lg bg-primary/10 text-primary">Reading</button>
-                <button
-                    class="px-4 py-2 text-sm font-bold rounded-lg text-[#637588] dark:text-gray-400 hover:text-primary transition-colors">Completed</button>
-                <button
-                    class="px-4 py-2 text-sm font-bold rounded-lg text-[#637588] dark:text-gray-400 hover:text-primary transition-colors">Planned</button>
+                class="flex bg-white dark:bg-gray-800 p-1 rounded-xl shadow-sm border border-[#dce0e5] dark:border-gray-700 gap-2">
+                <button class="flex h-9 items-center gap-2 rounded-lg border border-[#dce0e5] dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm font-medium text-[#637588] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <span>Status: All</span>
+                    <span class="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
+                </button>
+                @if($type === 'library')
+                    <button class="flex h-9 items-center gap-2 rounded-lg border border-[#dce0e5] dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm font-medium text-[#637588] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <span>Type: All</span>
+                        <span class="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
+                    </button>
+                @endif
             </div>
         </div>
         <!-- Table Container -->
@@ -149,9 +177,8 @@ new class extends Component {
                                         </div>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold text-[#111418] dark:text-white leading-tight">One Piece
-                                        </p>
-                                        <p class="text-xs text-[#637588] dark:text-gray-400">Eiichiro Oda</p>
+                                        <p class="text-sm font-bold text-[#111418] dark:text-white leading-tight">{{ $item->name }}</p>
+                                        <p class="text-xs text-[#637588] dark:text-gray-400">{{ $item->author }}</p>
                                     </div>
                                 </div>
                             </td>

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Activity;
 use App\Models\MediaItems;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
@@ -20,8 +21,19 @@ class Dashboard extends Component
             }
         }
 
+        $oldProgress = $mediaItem->progress_current;
         $mediaItem->progress_current += 1;
         $mediaItem->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => auth()->id(),
+            'media_item_id' => $mediaItem->id,
+            'activity_type' => 'progress_update',
+            'description' => 'Updated progress',
+            'old_value' => (string) $oldProgress,
+            'new_value' => (string) $mediaItem->progress_current,
+        ]);
     }
 
     public function decrementProgress($id)
@@ -30,13 +42,31 @@ class Dashboard extends Component
         if ($mediaItem->progress_current == 0) {
             return;
         }
+
+        $oldProgress = $mediaItem->progress_current;
         $mediaItem->progress_current -= 1;
         $mediaItem->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => auth()->id(),
+            'media_item_id' => $mediaItem->id,
+            'activity_type' => 'progress_update',
+            'description' => 'Updated progress',
+            'old_value' => (string) $oldProgress,
+            'new_value' => (string) $mediaItem->progress_current,
+        ]);
     }
 
     public function render()
     {
         $mediaItems = MediaItems::orderBy('updated_at', 'desc')->get();
-        return view('livewire.dashboard', compact('mediaItems'));
+        $activities = Activity::with('mediaItem')
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('livewire.dashboard', compact('mediaItems', 'activities'));
     }
 }

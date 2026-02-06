@@ -5,7 +5,11 @@ namespace App\Livewire\Settings;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 
+#[Layout('components.layouts.auth')]
+#[Title('Profile Settings')]
 class Profile extends Component
 {
     public $state = [];

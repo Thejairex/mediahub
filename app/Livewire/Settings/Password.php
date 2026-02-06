@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password as PasswordRules;
 
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+
+#[Layout('components.layouts.auth')]
+#[Title('Update Password')]
 class Password extends Component
 {
     public $current_password = '';

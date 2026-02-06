@@ -5,14 +5,11 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Media Hub - Login</title>
+    <title>{{ $title ?? 'Media Hub' }}</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
@@ -42,7 +39,6 @@
             },
         }
     </script>
-    @livewireStyles
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -52,9 +48,7 @@
 
 <body
     class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white min-h-screen flex flex-col justify-center items-center p-4">
-    <!-- Main Login Card -->
     {{ $slot }}
-    @livewireScripts
 </body>
 
 </html>
