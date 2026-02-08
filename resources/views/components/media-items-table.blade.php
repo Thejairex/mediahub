@@ -173,8 +173,12 @@ new class extends Component {
                                         class="w-10 h-14 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0">
                                         <div class="w-full h-full bg-cover bg-center"
                                             data-alt="Manga cover illustration for One Piece"
-                                            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBs5yBAua3xmuhZHXQ_66AqKrB2Y43wbOmmTDFDWDf_aFsYENLbxtLtCg3WXm4Mtq-bwJJTicFICB0ysXl91pPnTpsT5RPudAd_LuBo6MOBSsg3WqrHLwb3CrsCJMUFfgmSRWc-z-1837uCBQE6VUIdNUaIQa0o9iNX_gs1MKMjQQNCx2u2nZVjIuqIyth-KsVnDjGVzE_sNMpu0OjQcDbMHL39Z3Jrdo7cqD9Y3WnVyXFqOkK9huLs_kOeAl6IQo7Y927FNPi58M6U')">
-                                        </div>
+                                            @if ($item->getFirstMediaUrl('cover'))
+                                            style="background-image: url('{{ $item->getFirstMediaUrl('cover') }}')"
+                                            @else
+                                            style="background-image: url('{{ asset('images/noimagemid.jpg') }}')"
+                                            @endif
+                                        ></div>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-[#111418] dark:text-white leading-tight">{{ $item->name }}</p>

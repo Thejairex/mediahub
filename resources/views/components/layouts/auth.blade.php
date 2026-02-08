@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="en">
+<html class="{{ auth()->user()->setting('dark_mode', false) ? 'dark' : 'light' }}" lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -170,22 +170,94 @@
                     <h2 class="text-lg font-bold">{{ $title ?? 'Dashboard' }}</h2>
                     <div class="flex items-center gap-4">
                         <div class="relative max-w-xs">
-                        <span
-                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#637588] text-xl">search</span>
-                        <input
-                            class="w-64 pl-10 pr-4 py-1.5 bg-[#f0f2f4] dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary"
-                            placeholder="Search your library..." type="text" />
-                    </div>
-                    <button
-                        class="p-2 text-[#637588] dark:text-[#a0aec0] hover:bg-[#f0f2f4] dark:hover:bg-gray-800 rounded-full transition-colors">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </button>
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#637588] text-xl">search</span>
+                            <input
+                                class="w-64 pl-10 pr-4 py-1.5 bg-[#f0f2f4] dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary"
+                                placeholder="Search your library..." type="text" />
+                        </div>
+                        <button
+                            class="p-2 text-[#637588] dark:text-[#a0aec0] hover:bg-[#f0f2f4] dark:hover:bg-gray-800 rounded-full transition-colors">
+                            <span class="material-symbols-outlined">notifications</span>
+                        </button>
                 </header>
             @endif
+            <!-- Toast Notifications -->
+            <div x-data="toastHandler" @toast.window="addNotification($event.detail)"
+                class="fixed top-6 right-6 z-[100] flex flex-col gap-3 w-full max-w-xs pointer-events-none">
+                <template x-for="toast in notifications" :key="toast.id">
+                    <div x-show="toast.visible" x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="translate-x-full opacity-0"
+                        x-transition:enter-end="translate-x-0 opacity-100"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="translate-x-0 opacity-100"
+                        x-transition:leave-end="translate-x-full opacity-0"
+                        class="pointer-events-auto p-4 rounded-xl shadow-2xl border flex items-center gap-3 backdrop-blur-md transition-all duration-300"
+                        :class="{
+                             'bg-green-500/90 border-green-400/50 text-white': toast.type === 'success',
+                             'bg-red-500/90 border-red-400/50 text-white': toast.type === 'error',
+                             'bg-yellow-500/90 border-yellow-400/50 text-white': toast.type === 'warning',
+                             'bg-blue-500/90 border-blue-400/50 text-white': toast.type === 'info'
+                         }">
+                        <div class="flex-shrink-0">
+                            <span class="material-symbols-outlined text-2xl" x-text="getIcon(toast.type)"></span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold" x-text="toast.message"></p>
+                        </div>
+                        <button @click="removeNotification(toast.id)"
+                            class="flex-shrink-0 hover:opacity-75 transition-opacity">
+                            <span class="material-symbols-outlined text-lg">close</span>
+                        </button>
+                    </div>
+                </template>
+            </div>
             {{ $slot }}
         </main>
     </div>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('toastHandler', () => ({
+                notifications: [],
+                addNotification(detail) {
+                    console.log('Toast detail:', detail);
+                    // Livewire 3 often wraps events in an array or sends the detail directly
+                    const data = Array.isArray(detail) ? detail[0] : detail;
+
+                    const id = Date.now();
+                    const notification = {
+                        id: id,
+                        type: data.type || 'info',
+                        message: data.message || (typeof data === 'string' ? data : ''),
+                        visible: true
+                    };
+
+                    this.notifications.push(notification);
+
+                    setTimeout(() => {
+                        this.removeNotification(id);
+                    }, 5000);
+                },
+                removeNotification(id) {
+                    const index = this.notifications.findIndex(n => n.id === id);
+                    if (index !== -1) {
+                        this.notifications[index].visible = false;
+                        setTimeout(() => {
+                            this.notifications = this.notifications.filter(n => n.id !== id);
+                        }, 500);
+                    }
+                },
+                getIcon(type) {
+                    switch (type) {
+                        case 'success': return 'check_circle';
+                        case 'error': return 'error';
+                        case 'warning': return 'warning';
+                        default: return 'info';
+                    }
+                }
+            }));
+        });
+    </script>
 </body>
 
 </html>

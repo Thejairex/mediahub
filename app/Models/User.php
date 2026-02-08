@@ -8,11 +8,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -60,5 +62,37 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('profile_photo')
+            ->singleFile();
+    }
+
+    public function settings()
+    {
+        return $this->hasMany(UserSetting::class);
+    }
+
+    public function setting(string $key, $default = null)
+    {
+        return $this->settings()
+            ->where('key', $key)
+            ->first()
+            ?->value ?? $default;
+    }
+
+    public function setSetting(string $key, $value)
+    {
+        return $this->settings()->updateOrCreate(
+            ['key' => $key],
+            ['value' => $value]
+        );
+    }
+
+    public function deleteSetting(string $key)
+    {
+        return $this->settings()->where('key', $key)->delete();
     }
 }

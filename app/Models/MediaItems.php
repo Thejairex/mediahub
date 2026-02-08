@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class MediaItems extends Model
+class MediaItems extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $table = 'media_items';
 
     protected $fillable = [
@@ -46,5 +50,11 @@ class MediaItems extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('cover')
+            ->singleFile();
     }
 }

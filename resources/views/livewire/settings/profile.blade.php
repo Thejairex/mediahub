@@ -1,4 +1,87 @@
 <div class="flex-1 h-full overflow-y-auto bg-background-light dark:bg-background-dark relative">
+    @if ($showModalUploadPhoto)
+        <x-modal maxWidth="md">
+            <x-slot name="title">
+                Update Profile Photo
+            </x-slot>
+            <x-slot name="content">
+                <div class="space-y-6">
+                    <!-- Source Tabs -->
+                    <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                        <button wire:click="setPhotoSource('file')"
+                            class="flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-all {{ $photo_source === 'file' ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-text-secondary dark:text-gray-400 hover:text-text-main' }}">
+                            Upload File
+                        </button>
+                        <button wire:click="setPhotoSource('url')"
+                            class="flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-all {{ $photo_source === 'url' ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-text-secondary dark:text-gray-400 hover:text-text-main' }}">
+                            From URL
+                        </button>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="space-y-4">
+                        @if($photo_source === 'file')
+                            <div
+                                class="flex flex-col items-center justify-center border-2 border-dashed border-border-light dark:border-border-dark rounded-xl p-8 hover:border-primary/50 transition-colors group">
+                                <input type="file" wire:model="profile_photo" class="hidden" id="photo_upload" accept="image/*">
+                                <label for="photo_upload" class="cursor-pointer flex flex-col items-center gap-3">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                        <span class="material-symbols-outlined text-2xl">upload</span>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-sm font-semibold text-text-main dark:text-white">Click to upload</p>
+                                        <p class="text-xs text-text-secondary dark:text-gray-400">PNG, JPG up to 2MB</p>
+                                    </div>
+                                </label>
+                                @if ($profile_photo)
+                                    <div class="mt-4 p-2 bg-primary/5 rounded-lg flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm text-primary">check_circle</span>
+                                        <span
+                                            class="text-xs font-medium text-primary truncate max-w-[200px]">{{ $profile_photo->getClientOriginalName() }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                            @error('profile_photo') <p class="text-xs text-red-500 mt-1">{{ $message }} </p>@enderror
+                        @else
+                            <div class="space-y-4">
+                                <label class="block">
+                                    <span class="text-sm font-medium text-text-main dark:text-gray-300 mb-1.5 block">Image
+                                        URL</span>
+                                    <input wire:model.live="image_url"
+                                        class="form-input block w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-border-light dark:border-gray-700 rounded-lg text-text-main dark:text-white focus:ring-primary focus:border-primary placeholder-gray-400 text-sm shadow-sm transition-shadow"
+                                        type="url" placeholder="https://example.com/image.jpg" />
+                                </label>
+                                @error('image_url') <p class="text-xs text-red-500 mt-1">{{ $message }} </p>@enderror
+
+                                @if($image_url && !$errors->has('image_url'))
+                                    <div
+                                        class="relative w-full aspect-square rounded-xl overflow-hidden border border-border-light dark:border-border-dark bg-gray-50 dark:bg-gray-800">
+                                        <img src="{{ $image_url }}" class="w-full h-full object-cover"
+                                            onerror="this.src='https://placehold.co/400x400?text=Invalid+Image+URL'">
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </x-slot>
+            <x-slot name="footer">
+                <button wire:click="closeModal"
+                    class="px-4 py-2 text-sm font-medium text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white transition-colors">
+                    Cancel
+                </button>
+                <button wire:click="uploadPhoto" wire:loading.attr="disabled"
+                    class="px-6 py-2 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition-all transform active:scale-95 text-sm flex items-center gap-2">
+                    <span wire:loading wire:target="uploadPhoto"
+                        class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span wire:loading.remove wire:target="uploadPhoto">Save Photo</span>
+                    <span wire:loading wire:target="uploadPhoto">Saving...</span>
+                </button>
+            </x-slot>
+        </x-modal>
+    @endif
+
     <div class="max-w-4xl mx-auto px-6 py-10 md:px-12 md:py-12">
         <!-- Page Heading -->
         <header class="mb-10">
@@ -9,7 +92,7 @@
                 preferences.</p>
         </header>
         <!-- Form Container -->
-        <form class="space-y-12 pb-20">
+        <form class="space-y-12 pb-20" wire:submit.prevent="updateSettings">
             <!-- Section 1: Personal Info -->
             <section
                 class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
@@ -22,10 +105,11 @@
                     <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
                         <div class="relative group">
                             <div class="w-24 h-24 rounded-full bg-cover bg-center border-2 border-white dark:border-gray-700 shadow-sm"
-                                data-alt="User profile avatar showing a minimalist portrait"
-                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAIqc-ZUifd9X6BrlFUoFAmPJXk5luHL78wyiPmjR9WGLaXkhQMiVWBO78haox_2CrbBrsHRfNqgJSzpm7OjPvU1TT4-T16-OJ-qnslPKZh2haKZ5rcVArCpTxS0eb2ba4dN_uG7jspIgNb6M4kKnWQX62RudrSMJIy4XuW1TgvwlOGUoDPfGEcgQ68iDwTLklTE0YSWNVNi7Fjp33r9t56uT2WXdr1zPM__wWK3_gWIOapxEeZADrUEW0iaJ6Z2BLItcCmZ2JCQei4');">
-                            </div>
-                            <button
+                                data-alt="User profile avatar" @if ($user->hasMedia('profile_photo'))
+                                style="background-image: url('{{ $user->getFirstMediaUrl('profile_photo') }}');" @else
+                                    style="background-image: url('https://ui-avatars.com/api/?name={{ urlencode($user->username) }}&color=7F9CF5&background=EBF4FF');"
+                                @endif></div>
+                            <button wire:click="modalUploadPhoto"
                                 class="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-md hover:bg-blue-600 transition-colors"
                                 type="button">
                                 <span class="material-symbols-outlined text-[16px]">edit</span>
@@ -38,16 +122,18 @@
                                 size: 2MB.
                             </p>
                             <div class="flex gap-3">
-                                <button
+                                <button wire:click="modalUploadPhoto"
                                     class="px-4 py-2 bg-background-light dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-text-main dark:text-white text-sm font-medium rounded-lg transition-colors border border-border-light dark:border-gray-600"
                                     type="button">
                                     Upload New
                                 </button>
-                                <button
-                                    class="px-4 py-2 text-red-600 dark:text-red-400 text-sm font-medium hover:underline"
-                                    type="button">
-                                    Remove
-                                </button>
+                                @if($user->hasMedia('profile_photo'))
+                                    <button wire:click="removePhoto"
+                                        class="px-4 py-2 text-red-600 dark:text-red-400 text-sm font-medium hover:underline"
+                                        type="button">
+                                        Remove
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -63,7 +149,7 @@
                                 </span>
                                 <input
                                     class="form-input block w-full pl-10 pr-3 py-2.5 bg-white dark:bg-gray-900 border border-border-light dark:border-gray-700 rounded-lg text-text-main dark:text-white focus:ring-primary focus:border-primary placeholder-gray-400 text-sm shadow-sm transition-shadow"
-                                    type="text" value="Alex Reader" />
+                                    type="text" value="{{ $user->username }}" />
                             </div>
                         </label>
                         <label class="block">
@@ -76,7 +162,7 @@
                                 </span>
                                 <input
                                     class="form-input block w-full pl-10 pr-3 py-2.5 bg-white dark:bg-gray-900 border border-border-light dark:border-gray-700 rounded-lg text-text-main dark:text-white focus:ring-primary focus:border-primary placeholder-gray-400 text-sm shadow-sm transition-shadow"
-                                    type="email" value="alex@mediahub.app" />
+                                    type="email" value="{{ $user->email }}" />
                             </div>
                         </label>
                     </div>
@@ -96,7 +182,8 @@
                             <span class="text-sm font-medium text-text-main dark:text-gray-300 mb-1.5 block">Interface
                                 Language</span>
                             <select
-                                class="form-select block w-full py-2.5 bg-white dark:bg-gray-900 border border-border-light dark:border-gray-700 rounded-lg text-text-main dark:text-white focus:ring-primary focus:border-primary text-sm shadow-sm">
+                                class="form-select block w-full py-2.5 bg-white dark:bg-gray-900 border border-border-light dark:border-gray-700 rounded-lg text-text-main dark:text-white focus:ring-primary focus:border-primary text-sm shadow-sm"
+                                wire:model="settings.language">
                                 <option selected="" value="en">English (US)</option>
                                 <option value="es">Español</option>
                                 <option value="jp">日本語</option>
@@ -114,7 +201,8 @@
                                 environments.</span>
                         </div>
                         <label class="flex items-center cursor-pointer relative" for="dark-mode-toggle">
-                            <input class="sr-only peer" id="dark-mode-toggle" type="checkbox" />
+                            <input class="sr-only peer" id="dark-mode-toggle" type="checkbox"
+                                wire:model="settings.dark_mode" />
                             <div
                                 class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
                             </div>
@@ -166,7 +254,7 @@
             <div class="flex justify-end mt-8">
                 <button
                     class="px-6 py-2.5 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition-all transform active:scale-95 text-sm flex items-center gap-2"
-                    type="button">
+                    type="button" wire:click="updateSettings">
                     <span class="material-symbols-outlined text-[20px]" wire:loading.remove>save</span>
                     <span class="material-symbols-outlined text-[20px]" wire:loading wire:target="save">spinner</span>
                     Save Changes
