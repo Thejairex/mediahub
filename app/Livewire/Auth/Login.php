@@ -40,6 +40,7 @@ class Login extends Component
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
+        $this->dispatch('toast', type: 'success', message: 'Has iniciado sesión correctamente.');
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
 
