@@ -63,18 +63,57 @@ class MediaItemsController extends Controller
         return redirect('/media-items/' . $mediaItem->type);
     }
 
-    public function edit()
+    public function edit(Request $request)
     {
-        return view('media-items.edit');
+        $mediaItem = MediaItems::find($request->id);
+        return view('media-items.edit', compact('mediaItem'));
     }
 
-    public function update()
+    public function update(Request $request)
     {
+        $mediaItem = MediaItems::find($request->id);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', 'max:255'],
+            'status' => ['required', 'string', 'max:255'],
+            'progress_current' => ['required', 'integer'],
+            'progress_total' => ['nullable', 'integer'],
+            'notes' => ['nullable', 'string', 'max:255'],
+            'source' => ['nullable', 'string', 'max:255'],
+            'source_url' => ['nullable', 'string', 'max:255'],
+            'image_url' => ['nullable', 'string', 'max:255'],
+        ]);
+        $validated['name'] = ucwords(strtolower(trim($validated['name'])));
+        $mediaItem->update($validated);
 
+        if (isset($validated['image_url'])) {
+            $mediaItem->addMediaFromUrl($validated['image_url'])->toMediaCollection('cover');
+        }
+        // Log activity
+        Activity::create([
+            'user_id' => auth()->id(),
+            'media_item_id' => $mediaItem->id,
+            'activity_type' => 'updated',
+            'description' => 'Updated ' . $mediaItem->type,
+            'old_value' => $mediaItem->name,
+            'new_value' => $mediaItem->name,
+        ]);
+
+        return redirect('/media-items/' . $mediaItem->type);
     }
 
-    public function destroy()
+    public function destroy(Request $request)
     {
+        $mediaItem = MediaItems::find($request->id);
+        $mediaItem->delete();
+        return redirect('/media-items/' . $mediaItem->type);
+    }
 
+    public function importCsv(Request $request){
+        return view('media-items.importCsv');
+    }
+
+    public function sucessImport(Request $request){
+        return view('media-items.sucessImport');
     }
 }

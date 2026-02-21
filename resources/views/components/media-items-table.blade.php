@@ -113,11 +113,19 @@ new class extends Component {
                     collection
                 </p>
             </div>
-            <a href="{{ route('media-items.create') }}"
-                class="flex items-center gap-2 h-11 px-6 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-all shadow-sm">
-                <span class="material-symbols-outlined text-[20px]">add</span>
-                <span>Add {{ ucfirst($type) }}</span>
-            </a>
+            @if($type === 'anime')
+            <div class="flex items-center gap-2">
+                <a href="{{ route('importCsv') }}" class="flex items-center gap-2 h-11 px-6 bg-secondary text-white rounded-lg font-bold hover:bg-secondary/90 transition-all shadow-sm border border-gray border-slate-200">
+                    <span class="material-symbols-outlined text-[20px]">download</span>
+                    <span>Import from CSV</span>
+                </a>
+                <a href="{{ route('media-items.create') }}"
+                    class="flex items-center gap-2 h-11 px-6 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[20px]">add</span>
+                    <span>Add {{ ucfirst($type) }}</span>
+                </a>
+            </div>
+            @endif
         </div>
         <!-- Search and Filter Bar -->
         <div class="flex flex-col md:flex-row gap-4 items-center">

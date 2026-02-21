@@ -10,12 +10,12 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Item 1 -->
+            @if ($mediaItems->count() > 0)
+                @for ($i = 0; $i < 4; $i++)
 
-            @for ($i = 0; $i < 4; $i++)
-
-                <div
-                    class="bg-white dark:bg-[#1a232e] rounded-xl p-3 border border-[#f0f2f4] dark:border-[#2a3441] shadow-sm hover:shadow-md transition-shadow">
-                    <div class="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-200 mb-3">
+                    <div
+                        class="bg-white dark:bg-[#1a232e] rounded-xl p-3 border border-[#f0f2f4] dark:border-[#2a3441] shadow-sm hover:shadow-md transition-shadow">
+                        <div class="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-200 mb-3">
                         @if ($mediaItems[$i]->image_url != null)
                             <img class="w-full h-full object-cover" data-alt="Abstract vibrant comic style artwork"
                                 src="{{ $mediaItems[$i]->image_url }}" />
@@ -52,7 +52,9 @@
                     </div>
                 </div>
             @endfor
-
+            @else
+                <p class="text-sm text-[#637588] dark:text-[#a0aec0]">No media items found</p>
+            @endif
         </div>
     </section>
     <!-- Quick Stats -->

@@ -1,4 +1,27 @@
 <x-layouts.auth>
+    <div class="fixed inset-0 z-0 opacity-20 pointer-events-none filter blur-sm">
+        <div class="layout-container flex h-full flex-col">
+            <header class="flex items-center justify-between border-b border-white/10 px-10 py-3">
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-4">
+                        <span class="material-symbols-outlined text-primary">grid_view</span>
+                        <h2 class="text-lg font-bold">Media Hub</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="h-8 w-32 bg-white/10 rounded"></div>
+                    <div class="h-10 w-10 bg-white/10 rounded-full"></div>
+                </div>
+            </header>
+            <main class="p-10 grid grid-cols-3 gap-6">
+                <div class="h-64 bg-white/5 rounded-xl"></div>
+                <div class="h-64 bg-white/5 rounded-xl"></div>
+                <div class="h-64 bg-white/5 rounded-xl"></div>
+                <div class="h-96 col-span-2 bg-white/5 rounded-xl"></div>
+                <div class="h-96 bg-white/5 rounded-xl"></div>
+            </main>
+        </div>
+    </div>
     <!-- Modal Overlay -->
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
         <!-- Success Card -->
@@ -56,4 +79,5 @@
     <div
         class="fixed bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-30">
     </div>
+
 </x-layouts.auth>
